@@ -78,7 +78,7 @@ func handleConnection(conn net.Conn) {
 
 func handleUserAgent(conn net.Conn, userAgent string) {
 	contentLength := fmt.Sprintf("%d", len(userAgent))
-	rest := response.NewHTTPResponse(200, "OK!", response.Headers{
+	rest := response.NewHTTPResponse(200, "OK", response.Headers{
 		ContentType:   "text/plain",
 		ContentLength: contentLength,
 	}, userAgent)
@@ -86,13 +86,13 @@ func handleUserAgent(conn net.Conn, userAgent string) {
 }
 
 func handleRoot(conn net.Conn) {
-	rest := response.NewHTTPResponse(200, "OK!", response.Headers{}, "")
+	rest := response.NewHTTPResponse(200, "OK", response.Headers{}, "")
 	rest.Send(conn)
 }
 
 func handleEcho(conn net.Conn, message string) {
 	contentLength := fmt.Sprintf("%d", len(message))
-	rest := response.NewHTTPResponse(200, "OK!", response.Headers{
+	rest := response.NewHTTPResponse(200, "OK", response.Headers{
 		ContentType:   "text/plain",
 		ContentLength: contentLength,
 	}, message)

@@ -36,7 +36,7 @@ func NewHTTPResponse(statusCode int, statusText string, headers Headers, body st
 func getStatusText(statusCode int) string {
 	switch statusCode {
 	case 200:
-		return "OK!"
+		return "OK"
 	case 400:
 		return "Bad Request"
 	case 404:
