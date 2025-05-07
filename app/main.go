@@ -30,8 +30,11 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
-		// Handle the connection in a separate function
-		handleConnection(conn)
+		// Handle the connection in a separate goroutine
+		// Start a new goroutine to handle the connection concurrently.
+		// This allows the server to handle multiple client connections at the same time.
+		// Each connection is processed independently in its own lightweight thread (goroutine).
+		go handleConnection(conn)
 	}
 }
 
