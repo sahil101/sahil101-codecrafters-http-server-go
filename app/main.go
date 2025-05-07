@@ -6,6 +6,9 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"github.com/codecrafters-io/http-server-starter-go/app/parser"
+	"github.com/codecrafters-io/http-server-starter-go/app/response"
 )
 
 func main() {
@@ -44,21 +47,41 @@ func handleConnection(conn net.Conn) {
 	}
 
 	// Parse the request line
-	requestLine = strings.TrimSpace(requestLine)
-	if strings.HasPrefix(requestLine, "GET ") {
-		splitRequest := strings.Split(requestLine, " ")
-		path := splitRequest[1]
-		if path == "/" {
-			response := "HTTP/1.1 200 OK\r\n\r\n"
-			conn.Write([]byte(response))
-		} else if strings.HasPrefix(path, "/echo") {
-			message := strings.Split(path, "/echo/")[1]
-			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(message), message)
-			conn.Write([]byte(response))
+	httpRequest, err := parser.ParseRequestLine(strings.TrimSpace(requestLine))
+	if err != nil {
+		resp := response.NewHTTPResponse(400, "Bad Request", response.Headers{ContentType: "text/plain"}, "Bad Request")
+		resp.Send(conn)
+		return
+	}
 
+	// Handle the request and send appropriate response
+	if httpRequest.Method == "GET" {
+		if httpRequest.Path == "/" {
+			handleRoot(conn)
+		} else if strings.HasPrefix(httpRequest.Path, "/echo/") {
+			message := strings.TrimPrefix(httpRequest.Path, "/echo/")
+			handleEcho(conn, message)
 		} else {
-			response := "HTTP/1.1 404 Not Found\r\n\r\n"
-			conn.Write([]byte(response))
+			handleNotFound(conn)
 		}
 	}
+}
+
+func handleRoot(conn net.Conn) {
+	rest := response.NewHTTPResponse(200, "OK!", response.Headers{}, "")
+	rest.Send(conn)
+}
+
+func handleEcho(conn net.Conn, message string) {
+	contentLength := fmt.Sprintf("%d", len(message))
+	rest := response.NewHTTPResponse(200, "OK!", response.Headers{
+		ContentType:   "text/plain",
+		ContentLength: contentLength,
+	}, message)
+	rest.Send(conn)
+}
+
+func handleNotFound(conn net.Conn) {
+	rest := response.NewHTTPResponse(404, "Not Found", response.Headers{}, "")
+	rest.Send(conn)
 }
