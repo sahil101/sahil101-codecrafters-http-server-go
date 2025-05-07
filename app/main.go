@@ -47,9 +47,15 @@ func handleConnection(conn net.Conn) {
 	requestLine = strings.TrimSpace(requestLine)
 	if strings.HasPrefix(requestLine, "GET ") {
 		splitRequest := strings.Split(requestLine, " ")
-		if splitRequest[1] == "/" {
+		path := splitRequest[1]
+		if path == "/" {
 			response := "HTTP/1.1 200 OK\r\n\r\n"
 			conn.Write([]byte(response))
+		} else if strings.HasPrefix(path, "/echo") {
+			message := strings.Split(path, "/echo/")[1]
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(message), message)
+			conn.Write([]byte(response))
+
 		} else {
 			response := "HTTP/1.1 404 Not Found\r\n\r\n"
 			conn.Write([]byte(response))
