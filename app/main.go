@@ -40,14 +40,21 @@ func handleConnection(conn net.Conn) {
 
 	// Read the request
 	reader := bufio.NewReader(conn)
-	requestLine, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading request: ", err.Error())
-		return
+	// Read the full request
+	request := ""
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading request: ", err.Error())
+			return
+		}
+		if line == "\r\n" { // End of headers
+			break
+		}
+		request += line
 	}
-
-	// Parse the request line
-	httpRequest, err := parser.ParseRequestLine(strings.TrimSpace(requestLine))
+	// Parse the full request
+	httpRequest, err := parser.ParseRequest(strings.TrimSpace(request))
 	if err != nil {
 		resp := response.NewHTTPResponse(400, "Bad Request", response.Headers{ContentType: "text/plain"}, "Bad Request")
 		resp.Send(conn)
@@ -61,7 +68,7 @@ func handleConnection(conn net.Conn) {
 		} else if strings.HasPrefix(httpRequest.Path, "/echo/") {
 			message := strings.TrimPrefix(httpRequest.Path, "/echo/")
 			handleEcho(conn, message)
-		} else if strings.HasPrefix(httpRequest.Path, "/user-agent/") {
+		} else if strings.HasPrefix(httpRequest.Path, "/user-agent") {
 			handleUserAgent(conn, httpRequest.UserAgent)
 		} else {
 			handleNotFound(conn)
