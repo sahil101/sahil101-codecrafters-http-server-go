@@ -61,10 +61,21 @@ func handleConnection(conn net.Conn) {
 		} else if strings.HasPrefix(httpRequest.Path, "/echo/") {
 			message := strings.TrimPrefix(httpRequest.Path, "/echo/")
 			handleEcho(conn, message)
+		} else if strings.HasPrefix(httpRequest.Path, "/user-agent/") {
+			handleUserAgent(conn, httpRequest.UserAgent)
 		} else {
 			handleNotFound(conn)
 		}
 	}
+}
+
+func handleUserAgent(conn net.Conn, userAgent string) {
+	contentLength := fmt.Sprintf("%d", len(userAgent))
+	rest := response.NewHTTPResponse(200, "OK!", response.Headers{
+		ContentType:   "text/plain",
+		ContentLength: contentLength,
+	}, userAgent)
+	rest.Send(conn)
 }
 
 func handleRoot(conn net.Conn) {
