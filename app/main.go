@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -11,10 +12,15 @@ import (
 	"github.com/codecrafters-io/http-server-starter-go/app/response"
 )
 
+var directory string
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
-
+	// store the directory path in a variable
+	// Use the flag package to parse command line arguments
+	flag.StringVar(&directory, "directory", ".", "files directory")
+	fmt.Print(directory)
 	// Start listening on port 4221
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
@@ -88,7 +94,7 @@ func handleFileRequest(conn net.Conn, path string) {
 	// Extract the file name from the path
 	fileName := strings.TrimPrefix(path, "/files/")
 	fmt.Println("File name: ", fileName)
-	filePath := fmt.Sprintf("/tmp/%s", fileName)
+	filePath := fmt.Sprintf("%s/%s", directory, fileName)
 	file, err := os.Open(filePath)
 	if err != nil {
 		handleNotFound(conn)
