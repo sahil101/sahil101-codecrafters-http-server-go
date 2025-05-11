@@ -68,6 +68,11 @@ func handleConnection(conn net.Conn) {
 	if httpRequest.Method == "GET" {
 		if httpRequest.Path == "/" {
 			handleRoot(conn)
+		} else if strings.HasPrefix(httpRequest.Path, "/files") {
+			// Handle file requests, it has a second argument which has a paramter
+			handleFileRequest(conn, httpRequest.Path)
+		} else if httpRequest.Path == "/headers" {
+			handleUserAgent(conn, httpRequest.UserAgent)
 		} else if strings.HasPrefix(httpRequest.Path, "/echo/") {
 			message := strings.TrimPrefix(httpRequest.Path, "/echo/")
 			handleEcho(conn, message)
@@ -77,6 +82,33 @@ func handleConnection(conn net.Conn) {
 			handleNotFound(conn)
 		}
 	}
+}
+
+func handleFileRequest(conn net.Conn, path string) {
+	// Extract the file name from the path
+	fileName := strings.TrimPrefix(path, "/files/")
+	fmt.Println("File name: ", fileName)
+	filePath := fmt.Sprintf("/tmp/%s", fileName)
+	file, err := os.Open(filePath)
+	if err != nil {
+		handleNotFound(conn)
+		return
+	}
+	defer file.Close()
+
+	// Read the file content
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		handleNotFound(conn)
+		return
+	}
+	// Content Length is the size of the file in bytes
+	contentLength := fmt.Sprintf("%d", len(content))
+	rest := response.NewHTTPResponse(200, "OK", response.Headers{
+		ContentType:   "application/octet-stream",
+		ContentLength: contentLength,
+	}, string(content))
+	rest.Send(conn)
 }
 
 func handleUserAgent(conn net.Conn, userAgent string) {
