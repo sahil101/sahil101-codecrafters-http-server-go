@@ -14,13 +14,19 @@ import (
 
 var directory string
 
+func init() {
+	// Define the --directory flag with a default value of "."
+	flag.StringVar(&directory, "directory", ".", "files directory")
+}
+
 func main() {
+	// Parse the command-line flags
+	flag.Parse()
+
+	fmt.Println("Using directory:", directory)
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
-	// store the directory path in a variable
-	// Use the flag package to parse command line arguments
-	flag.StringVar(&directory, "directory", ".", "files directory")
-	fmt.Print(directory)
+
 	// Start listening on port 4221
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
