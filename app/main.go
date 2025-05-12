@@ -75,7 +75,7 @@ func handleConnection(conn net.Conn) {
 		resp.Send(conn)
 		return
 	}
-	fmt.Println(httpRequest.Method)
+
 	if httpRequest.Method == "POST" {
 		if strings.HasPrefix(httpRequest.Path, "/files") {
 			postFileHandler(conn, httpRequest)
@@ -115,7 +115,7 @@ func postFileHandler(conn net.Conn, httpRequest parser.HTTPRequest) {
 		return
 	}
 	defer f.Close()
-	fmt.Println(httpRequest.Body, fileName)
+	fmt.Println(httpRequest.Body)
 	// Write the content to the file
 	_, _ = f.WriteString(httpRequest.Body)
 	rest := response.NewHTTPResponse(201, "Created", response.Headers{}, "")
