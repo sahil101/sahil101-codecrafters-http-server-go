@@ -77,8 +77,10 @@ func handleConnection(conn net.Conn) {
 	}
 
 	if httpRequest.Method == "POST" {
-		if strings.HasPrefix(httpRequest.Path, "/files") {
-			postFileHandler(conn, httpRequest)
+		if strings.HasPrefix(httpRequest.Path, "/files/") {
+			buffer := make([]byte, httpRequest.ContentLength)
+			reader.Read(buffer)
+			handleFileUpload(conn, httpRequest.Path, httpRequest.Body)
 		} else {
 			handleNotFound(conn)
 		}
@@ -104,8 +106,8 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func postFileHandler(conn net.Conn, httpRequest parser.HTTPRequest) {
-	fileName := strings.TrimPrefix(httpRequest.Path, "/files/")
+func handleFileUpload(conn net.Conn, path string, body string) {
+	fileName := strings.TrimPrefix(path, "/files/")
 	fmt.Println("File name: ", fileName)
 	filePath := fmt.Sprintf("%s/%s", directory, fileName)
 	// write to the file
@@ -115,9 +117,8 @@ func postFileHandler(conn net.Conn, httpRequest parser.HTTPRequest) {
 		return
 	}
 	defer f.Close()
-	fmt.Println(httpRequest.Body)
 	// Write the content to the file
-	_, _ = f.WriteString(httpRequest.Body)
+	_, _ = f.WriteString(body)
 	rest := response.NewHTTPResponse(201, "Created", response.Headers{}, "")
 	rest.Send(conn)
 }

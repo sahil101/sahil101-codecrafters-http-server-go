@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ type HTTPRequest struct {
 	Path          string
 	UserAgent     string
 	ContentType   string
-	ContentLength string
+	ContentLength int
 	Body          string
 }
 
@@ -39,7 +40,7 @@ func ParseRequest(request string) (HTTPRequest, error) {
 	// Parse headers to extract User-Agent, Content-Type, and Content-Length
 	userAgent := ""
 	contentType := ""
-	contentLength := ""
+	contentLength := 0
 	headersEndIndex := 0
 	for i, line := range lines[1:] {
 		if line == "" { // End of headers
@@ -51,7 +52,12 @@ func ParseRequest(request string) (HTTPRequest, error) {
 		} else if strings.HasPrefix(line, "Content-Type:") {
 			contentType = strings.TrimSpace(strings.TrimPrefix(line, "Content-Type:"))
 		} else if strings.HasPrefix(line, "Content-Length:") {
-			contentLength = strings.TrimSpace(strings.TrimPrefix(line, "Content-Length:"))
+			contentLengthStr := strings.TrimSpace(strings.TrimPrefix(line, "Content-Length:"))
+			var err error
+			contentLength, err = strconv.Atoi(contentLengthStr)
+			if err != nil {
+				return HTTPRequest{}, fmt.Errorf("invalid Content-Length value: %v", err)
+			}
 		}
 	}
 
@@ -60,13 +66,13 @@ func ParseRequest(request string) (HTTPRequest, error) {
 	if headersEndIndex < len(lines) {
 		body = strings.Join(lines[headersEndIndex:], "\r\n")
 	}
-	fmt.Println(lines[0:])
+
 	return HTTPRequest{
 		Method:        method,
 		Path:          path,
 		UserAgent:     userAgent,
 		ContentType:   contentType,
-		ContentLength: contentLength,
+		ContentLength: contentLength, // Now an integer
 		Body:          body,
 	}, nil
 }
