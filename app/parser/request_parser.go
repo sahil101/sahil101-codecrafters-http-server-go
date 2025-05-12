@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -53,7 +54,7 @@ func ParseRequest(request string) (HTTPRequest, error) {
 			contentLength = strings.TrimSpace(strings.TrimPrefix(line, "Content-Length:"))
 		}
 	}
-
+	fmt.Println(lines[1:])
 	// Extract the body (if any)
 	body := strings.Join(lines[headersEndIndex+1:], "\r\n")
 
