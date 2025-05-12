@@ -76,6 +76,14 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 
+	if httpRequest.Method != "POST" {
+		if strings.HasPrefix(httpRequest.Path, "/files") {
+			postFileHandler(conn, httpRequest)
+		} else {
+			handleNotFound(conn)
+		}
+	}
+
 	// Handle the request and send appropriate response
 	if httpRequest.Method == "GET" {
 		if httpRequest.Path == "/" {
@@ -94,6 +102,23 @@ func handleConnection(conn net.Conn) {
 			handleNotFound(conn)
 		}
 	}
+}
+
+func postFileHandler(conn net.Conn, httpRequest parser.HTTPRequest) {
+	fileName := strings.TrimPrefix(httpRequest.Path, "/files/")
+	fmt.Println("File name: ", fileName)
+	filePath := fmt.Sprintf("%s/%s", directory, fileName)
+	// write to the file
+	f, err := os.Create(filePath)
+	if err != nil {
+		handleNotFound(conn)
+		return
+	}
+	defer f.Close()
+	// Write the content to the file
+	_, _ = f.WriteString(httpRequest.Body)
+	rest := response.NewHTTPResponse(201, "Created", response.Headers{}, "")
+	rest.Send(conn)
 }
 
 func handleFileRequest(conn net.Conn, path string) {

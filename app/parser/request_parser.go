@@ -6,9 +6,12 @@ import (
 )
 
 type HTTPRequest struct {
-	Method    string
-	Path      string
-	UserAgent string
+	Method        string
+	Path          string
+	UserAgent     string
+	ContentType   string
+	ContentLength string
+	Body          string
 }
 
 // ParseRequest parses the HTTP request and returns an HTTPRequest struct
@@ -32,18 +35,34 @@ func ParseRequest(request string) (HTTPRequest, error) {
 	method := parts[0]
 	path := parts[1]
 
-	// Parse headers to extract User-Agent
+	// Parse headers to extract User-Agent, Content-Type, and Content-Length
 	userAgent := ""
-	for _, line := range lines[1:] {
+	contentType := ""
+	contentLength := ""
+	headersEndIndex := 0
+	for i, line := range lines[1:] {
+		if line == "" { // End of headers
+			headersEndIndex = i + 1
+			break
+		}
 		if strings.HasPrefix(line, "User-Agent:") {
 			userAgent = strings.TrimSpace(strings.TrimPrefix(line, "User-Agent:"))
-			break
+		} else if strings.HasPrefix(line, "Content-Type:") {
+			contentType = strings.TrimSpace(strings.TrimPrefix(line, "Content-Type:"))
+		} else if strings.HasPrefix(line, "Content-Length:") {
+			contentLength = strings.TrimSpace(strings.TrimPrefix(line, "Content-Length:"))
 		}
 	}
 
+	// Extract the body (if any)
+	body := strings.Join(lines[headersEndIndex+1:], "\r\n")
+
 	return HTTPRequest{
-		Method:    method,
-		Path:      path,
-		UserAgent: userAgent,
+		Method:        method,
+		Path:          path,
+		UserAgent:     userAgent,
+		ContentType:   contentType,
+		ContentLength: contentLength,
+		Body:          body,
 	}, nil
 }
