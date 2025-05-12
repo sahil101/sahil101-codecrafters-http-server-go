@@ -75,8 +75,8 @@ func handleConnection(conn net.Conn) {
 		resp.Send(conn)
 		return
 	}
-
-	if httpRequest.Method != "POST" {
+	fmt.Println(httpRequest.Method)
+	if httpRequest.Method == "POST" {
 		if strings.HasPrefix(httpRequest.Path, "/files") {
 			postFileHandler(conn, httpRequest)
 		} else {
