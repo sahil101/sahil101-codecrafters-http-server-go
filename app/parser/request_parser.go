@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -59,7 +60,7 @@ func ParseRequest(request string) (HTTPRequest, error) {
 	if headersEndIndex < len(lines) {
 		body = strings.Join(lines[headersEndIndex:], "\r\n")
 	}
-
+	fmt.Println(lines[0:])
 	return HTTPRequest{
 		Method:        method,
 		Path:          path,
