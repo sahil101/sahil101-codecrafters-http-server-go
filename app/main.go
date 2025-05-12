@@ -115,6 +115,7 @@ func postFileHandler(conn net.Conn, httpRequest parser.HTTPRequest) {
 		return
 	}
 	defer f.Close()
+	fmt.Println(httpRequest.Body, fileName)
 	// Write the content to the file
 	_, _ = f.WriteString(httpRequest.Body)
 	rest := response.NewHTTPResponse(201, "Created", response.Headers{}, "")
