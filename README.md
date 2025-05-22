@@ -1,4 +1,4 @@
-# HTTP Server in Go
+# HTTP Server in Go 
 
 This repository contains an implementation of an HTTP/1.1 server in Go. The server is capable of handling multiple client connections concurrently and supports basic HTTP request parsing and response handling.
 
